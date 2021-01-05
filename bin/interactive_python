@@ -1,0 +1,77 @@
+#!/bin/bash
+
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !MODULE: interactive_python
+#
+# !DESCRIPTION: Shell script to request an interactive session on Odyssey,
+#  geared for python development.
+#\\
+#\\
+# !CALLING SEQUENCE:
+#  interactive_python
+#
+# !REMARKS:
+#  Executes the srun command to start an interactive SLURM session.
+#  If PARTITION is omitted, then the job will start on the "huce_amd" partition.
+#  If TIME-IN-MINUTES is omitted, then the job will run for 60 minutes.
+#
+# !REVISION HISTORY: 
+#  27 Nov 2018 - M. Sulprizio- Initial version based on interactive_openmp
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+
+# Process the input arguments.  Use defaults if the
+# user supplies less than 4 argumetnts. (bmy, 7/10/15)
+# added port selection as optional 4th argument (cpt, 12/3/18)
+if [[ $# == 4 ]]; then
+   mem=$1
+   time=$2
+   part=$3
+   port=$4
+elif [[ $# == 3 ]]; then
+   mem=$1
+   time=$2
+   part=$3
+   port=8899
+elif [[ $# == 2 ]]; then
+   mem=$1
+   time=$2
+   part=huce_amd
+   port=8899
+elif [[ $# == 1 ]] ; then
+   mem=$1
+   time=60
+   part=huce_amd
+   port=8899
+else
+   echo "Usage: interactive_python MEMORY [TIME-IN-MINUTES] [PARTITION] [PORT]"
+   exit 1
+fi
+
+# Print information
+echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo "%%% Starting an Odyssey interactive session!"
+echo "%%%"
+echo "%%% Memory              : $mem MB"
+echo "%%% Requested time      : $time minutes"
+echo "%%% Requested partition : $part"
+echo "%%%"
+echo "%%% To open Jupyter notebook use:"
+echo "%%%  source activate gcpy"
+echo "%%%  jupyter notebook --port $port"
+echo "%%%  ..."
+echo "%%%  source deactivate gcpy"
+echo "%%%"
+echo "%%% Locally in Git-bash:"
+echo "%%%  ssh username@rclogin#.rc.fas.harvard.edu -L $port:localhost:$port -f -N"
+echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+
+# Start the interactive session
+srun --pty --mem=$mem -t $time -p $part --tunnel $port:$port /bin/bash
+
+#EOC

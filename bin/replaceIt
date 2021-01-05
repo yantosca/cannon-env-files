@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Replaces text in a file
+
+# Old text
+OLD="gmi.clim.HCOOH.geos5.2x25.20170103.nc"
+
+# New text
+NEW="gmi.clim.HCOOH.geos5.2x25.20170108.nc"
+
+# Input file
+INFILE=$1
+
+# Temp file
+TEMP="temp.txt"
+
+# Replace text
+if [[ -f "$INFILE" ]]; then
+    echo "Replacing text in $INFILE"
+    sed "s/$OLD/$NEW/g" "$INFILE" > $TEMP && mv $TEMP "$INFILE"
+fi
+
+exit 0

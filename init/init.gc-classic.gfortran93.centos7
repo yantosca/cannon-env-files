@@ -1,0 +1,177 @@
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !MODULE: init.gc-classic.gfortran93.centos7
+#
+# !DESCRIPTION: Bash script that loads the proper modules and sets 
+#  environment variables for GNU Fortran 9.3.0 and CentOS7.
+#\\
+#\\
+# !CALLING SEQUENCE:
+#  source ~/init/init.gc-classic.gfortran93.centos7
+#
+# !REMARKS:
+#
+# !REVISION HISTORY:
+#  Change directory to ~/env and type 'gitk' at the prompt to browse
+#  revision history.
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+
+#==============================================================================
+# %%%%% Clear existing environment variables %%%%%
+#==============================================================================
+unset CC
+unset CXX
+unset EMACS_HOME
+unset FC
+unset F77
+unset F90
+unset IDL_HOME
+unset NETCDF_HOME
+unset NETCDF_INCLUDE
+unset NETCDF_LIB
+unset NETCDF_FORTRAN_HOME
+unset NETCDF_FORTRAN_INCLUDE
+unset NETCDF_FORTRAN_LIB
+unset OMP_NUM_THREADS
+unset OMP_STACKSIZE
+unset PERL_HOME
+
+#==============================================================================
+# %%%%% Load RC-built modules %%%%%
+#
+# NOTE: Not all packages are obtained via Spack, we need to load
+# some (e.g. Git) via the traditional module load command
+#==============================================================================
+echo "Loading gfortran 9.3.0 and related libraries ..."
+
+# Initialize modules
+export LMOD_COLORIZE=yes
+module purge
+
+# List each RC-built module that you wish to use 
+pkgs=(git/2.17.0-fasrc01)
+
+# Load each RC-built module
+for f in ${pkgs[@]}; do
+    echo "Loading $f"
+    module load $f
+done
+
+#==============================================================================
+# %%%%% Load Spack packages %%%%%
+#==============================================================================
+
+# Initialize Spack
+export SPACK_ROOT=/n/jacob_lab/Lab/Apr2020/spack
+source $SPACK_ROOT/share/spack/setup-env.sh
+
+# List each Spack package that you want to load
+# (add the backslash after each new package that you add)
+# NOTE: We load gcc/gfortran 9.3.0 but still can use
+# other packages built with gcc/gfortran 9.2.0!
+pkgs=(                     \
+  gcc@9.3.0                \
+  emacs+X%gcc@9.2.0        \
+  cmake%gcc@9.2.0          \
+  flex%gcc@9.2.0           \
+  gdb%gcc@9.2.0            \
+  hdf5%gcc@9.2.0           \ 
+  nco%gcc@9.2.0            \
+  openmpi%gcc@9.2.0        \
+  openjdk%gcc@9.2.0        \
+  netcdf-c%gcc@9.2.0       \
+  netcdf-fortran%gcc@9.2.0 \
+  ncview%gcc@9.2.0         \
+  perl%gcc@9.2.0           \
+  tau%gcc@9.2.0            \
+)
+
+# Load each Spack package
+for f in ${pkgs[@]}; do
+    echo "Loading $f"
+    spack load $f
+done
+
+#==============================================================================
+# %%%%% Settings for OpenMP parallelization %%%%%
+#==============================================================================
+
+# Max out the stack memory for OpenMP
+# Asking for a huge number will just give you the max availble
+export OMP_STACKSIZE=500m
+
+# By default, set the number of threads for OpenMP parallelization to 1
+export OMP_NUM_THREADS=1
+
+# Redefine number threads for OpenMP parallelization
+# (a) If in a SLURM partition, set OMP_NUM_THREADS = SLURM_CPUS_PER_TASK
+# (b) Or, set OMP_NUM_THREADS to the optional first argument that is passed
+if [[ -n "${SLURM_CPUS_PER_TASK+1}" ]]; then
+  export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK}
+elif [[ "$#" -eq 1 ]]; then
+  if [[ "x$1" != "xignoreeof" ]]; then
+    export OMP_NUM_THREADS=${1}
+  fi
+fi
+echo "Number of OpenMP threads: $OMP_NUM_THREADS"   
+
+#==============================================================================
+# %%%%% Define relevant environment variables %%%%%
+#==============================================================================
+
+# Compiler environment variables
+export FC=gfortran
+export F90=gfortran
+export F77=gfortran
+export CC=gcc
+export CXX=g++
+
+# Machine architecture
+export ARCH=`uname -s`
+
+# netCDF paths
+export NETCDF_HOME=`spack location -i netcdf-c%gcc@9.2.0`
+export NETCDF_INCLUDE=${NETCDF_HOME}/include
+export NETCDF_LIB=${NETCDF_HOME}/lib
+
+# netCDF-Fortran paths
+export NETCDF_FORTRAN_HOME=`spack location -i netcdf-fortran%gcc@9.2.0`
+export NETCDF_FORTRAN_INCLUDE=${NETCDF_FORTRAN_HOME}/include
+export NETCDF_FORTRAN_LIB=${NETCDF_FORTRAN_HOME}/lib
+
+# Other important paths
+export GCC_HOME=`spack location -i gcc@9.3.0`
+export EMACS_HOME=`spack location -i emacs+X%gcc@9.2.0`
+export MPI_HOME=`spack location -i openmpi%gcc@9.2.0`
+export TAU_HOME=`spack location -i tau%gcc@9.2.0`
+
+#==============================================================================
+# %%%%% Echo relevant environment variables %%%%%
+#==============================================================================
+echo
+echo "Important environment variables:"
+echo "CC  (C compiler)       : $CC"
+echo "CXX (C++ compiler)     : $CXX"
+echo "FC  (Fortran compiler) : $FC"
+echo "NETCDF_HOME            : $NETCDF_HOME"
+echo "NETCDF_INCLUDE         : $NETCDF_INCLUDE"
+echo "NETCDF_LIB             : $NETCDF_LIB"
+echo "NETCDF_FORTRAN_HOME    : $NETCDF_FORTRAN_HOME"
+echo "NETCDF_FORTRAN_INCLUDE : $NETCDF_FORTRAN_INCLUDE"
+echo "NETCDF_FORTRAN_LIB     : $NETCDF_FORTRAN_LIB"
+
+#==============================================================================
+# %%%%% Other settings %%%%%
+#==============================================================================
+
+# Kludge: Reset the MANPATH variable so that we won't get the "argument list 
+# too long" error, which can happen if there are too many paths specified.
+export MANPATH=$GCC_HOME/share/man/:/n/helmod/apps/centos7/Core/git/2.17.0-fasrc01/share/man:/usr/share/man:
+
+# The cgdb debugger is installed manually due to Spack issues
+alias cgdb=/n/jacob_lab/Lab/Apr2020/cgdb-0.7.1/bin/cgdb

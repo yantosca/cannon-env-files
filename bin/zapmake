@@ -1,0 +1,60 @@
+#!/usr/bin/perl -w
+
+#EOC
+#------------------------------------------------------------------------------
+#                  GEOS-Chem Global Chemical Transport Model                  !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: zapmake
+#
+# !DESCRIPTION: Stops any leftover GNU make processes that may have hung.
+#\\
+#\\
+# !CALLING SEQUENCE:
+#  zapmake
+#
+# !REVISION HISTORY:
+#  06 Jan 2015 - R. Yantosca - Initial version
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+
+# Scalars
+my $cmd       = "";
+my $process   = "";
+my $id        = "";
+my $name      = "";
+
+# Arrays
+my @processes = qx/ps/;   # Returns lists of active processes
+my @subStrs   = ();
+
+# Loop over the process list
+foreach $process ( @processes ) {
+
+  # Remove newlines
+  chomp( $process );
+
+  # Split on spaces
+  @subStrs = split ( " ", $process );
+  	
+  # The 1st substring is the PROCESS ID
+  # The 4th substring is the PROCESS NAME
+  $id   = $subStrs[0]; 
+  $name = $subStrs[3];
+
+  # If the process name is "make" then kill it
+  if ( $name eq "make" ) { 
+    $cmd = "kill -9 $id";
+    print "$cmd\n";
+    qx/$cmd/;
+  }
+
+}
+
+# Return
+exit( $? );

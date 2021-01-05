@@ -1,0 +1,81 @@
+#!/bin/bash
+
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !MODULE: interactive_gchp
+#
+# !DESCRIPTION: Shell script to request an interactive session on Odyssey,
+#  geared for GCHP jobs (i.e. multiple nodes possible and cores evenly
+#  distributed amongst nodes). Requested time (minutes) and partition 
+#  are optional arguments. The defaults are 60 minutes on the 
+#  test partition.
+#\\
+#\\
+# !CALLING SEQUENCE:
+#  interactive_gchp NODES CORES MEM-PER-CPU [TIME-IN-MINUTES] [PARTITION]
+#
+# !REMARKS:
+#  Executes the srun command to start an interactive SLURM session.
+#
+# !REVISION HISTORY: 
+#  01 Jun 2016 - E. Lundgren - Initial version (based on interactive_openmp)
+#  29 Aug 2016 - E. Lundgren - Change --mem to --mem-per-cpu
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+
+# Process the input arguments
+if [[ $# == 5 ]]; then
+   nodes=$1    
+   cores=$2
+   mem=$3
+   time=$4
+   part=$5
+elif [[ $# == 4 ]]; then
+   nodes=$1    
+   cores=$2
+   mem=$3
+   time=$4
+   part=test
+elif [[ $# == 3 ]]; then
+   nodes=$1
+   cores=$2
+   mem=$3
+   time=60
+   part=test
+else
+   echo "Usage: interactive_gchp NODES CORES MEM-PER-CPU [TIME-IN-MINUTES] [PARTITION]"
+   exit 1
+fi
+
+# Print information
+echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo "%%% Starting an Odyssey interactive session!"
+echo "%%%"
+echo "%%% Number of nodes     : $nodes"
+echo "%%% Number of Cores     : $cores"
+echo "%%% Memory per CPU      : $mem MB"
+echo "%%% Requested time      : $time minutes"
+echo "%%% Requested partition : $part"
+echo "%%%"
+echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+
+# Calculate remainder of # Cores divided by # nodes
+remainder=$(($cores%$nodes))
+
+# Start the interactive session
+if [[ $nodes == 1 ]]; then
+   srun -p $part --pty --x11=first --mem-per-cpu=$mem -N $nodes -n $cores -t $time -p $part /bin/bash
+else
+   if [[ $remainder > 0 ]]; then
+       echo "FAILURE: Number of Cores must be divisible by number of nodes. Try again."
+   else    
+     cores_per_node=$(($cores/$nodes))
+     srun -p $part --pty --x11=first -m plane=$cores_per_node --mem-per-cpu=$mem -N $nodes -n $cores -t $time -p $part /bin/bash
+   fi
+fi
+
+#EOC

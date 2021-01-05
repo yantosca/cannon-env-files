@@ -1,0 +1,74 @@
+#!/bin/bash
+
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !MODULE: interactive
+#
+# !DESCRIPTION: Shell script to request an interactive session on Odyssey.
+#\\
+#\\
+# !CALLING SEQUENCE:
+#  interactive CORES NODES MEMORY-PER-CPU [TIME-IN-MINUTES] [PARTITION]
+#
+# !REMARKS:
+#  Executes the srun command.  For now, all Cores are placed on one node,
+#  for traditional GEOS-Chem usage.
+#
+# !REVISION HISTORY: 
+#  Use the gitk browser to view the Git version history.
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+
+
+# Process the input arguments.  Use defaults if the
+# user supplies less than 4 argumetnts. (bmy, 7/10/15)
+if [[ $# == 5 ]]; then
+   cores=$1
+   nodes=$2
+   mem=$3
+   time=$4
+   part=$5
+elif [[ $# == 4 ]]; then
+   cores=$1
+   nodes=$2
+   mem=$3
+   time=$4
+   part=test
+elif [[ $# == 3 ]]; then
+   cores=$1
+   nodes=$2
+   mem=$3
+   time=60
+   part=test
+elif [[ $# == 2 ]] ; then
+   cores=$1
+   nodes=1
+   mem=$2
+   time=60
+   part=test
+else
+   echo "Usage: interactive CORES NODES MEM-PER-CPU [TIME-IN-MINUTES]"
+   exit 1
+fi
+
+# Print information
+echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo "%%% Starting an Odyssey interactive session!"
+echo "%%% Number of Cores     : $cores"
+echo "%%% Number of Nodes     : $nodes"
+echo "%%% Memory per CPU      : $mem MB"
+echo "%%% Requested time      : $time minutes"
+echo "%%% Requested partition : $part"
+echo "%%%"
+echo "%%% Reminder: Make sure \$OMP_NUM_THREADS in your shell is set"
+echo "%%% to the same number of cores that you requested!"
+echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+
+# Start the interactive session
+srun --pty --x11=first -n $cores -N $nodes --mem-per-cpu=$mem -p $part -t $time /bin/bash
+
+#EOC

@@ -1,0 +1,411 @@
+#!/usr/bin/perl -w
+
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !MODULE: jobstats
+#
+# !DESCRIPTION: Gets SLURM statistics obtained from the "sacct -l -j" command
+#  using the jobinfo script and computes the CPU time/wall time metric.
+#\\
+#\\
+# !USES:
+#
+  require 5.003;                  # Need this version of Perl or newer
+  use strict;                     # Force strict syntax rules
+#
+# !CALLING SEQUENCE:
+#  jobstats 55555                 # Returns select info for JobID # 55555
+#
+# !REVISION HISTORY: 
+#  30 Oct 2015 - M. Sulprizio- Initial version
+#  10 Nov 2015 - R. Yantosca - Now also print the % of ideal performance
+#  18 Nov 2015 - R. Yantosca - Added more error checks
+#  17 Dec 2015 - R. Yantosca - Fixed multiple reporting of memory
+#EOP
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: round
+#
+# !DESCRIPTION: Rounds a number to any place.
+#\\
+#\\
+# !INTERFACE:
+#
+sub round($$) {
+#
+# !INPUT PARAMETERS: 
+#
+  my( $num, $prec )= @_;   # Number and precision
+#
+# !CALLING SEQUENCE:
+#  $result = &round( $num, 10.0 )   # Rounds to nearest 10
+#  $result = &round( $num, 1.0  )   # Rounds to nearest 1
+#  $result = &round( $num, 0.1  )   # Rounds to nearest 0.1
+#  $result = &round( $num, 0.01 )   # Rounds to nearest 0.01, etc.
+#
+# !REMARKS:
+#  Taken from http://www.perlmonks.org/?node_id=30195
+#
+# !REVISION HISTORY:
+#  27 Oct 2015 - R. Yantosca - Initial version
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+
+  return int( $num/$prec + 0.5 - ($num<0) ) * $prec;
+}
+#EOC
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: convertToSec
+#
+# !DESCRIPTION: Converts time in DD-hh:mm:ss format to seconds.
+#\\
+#\\
+# !INTERFACE:
+#
+sub convertToSec($) {
+#
+# !INPUT PARAMETERS: 
+#
+  my ( $time ) = @_;   # Data value from sacct
+#
+# !REMARKS:
+#
+# !REVISION HISTORY:
+#  30 Oct 2015 - M. Sulprizio- Initial version
+#  19 Nov 2015 - R. Yantosca - Bug fix: Use proper indices when the time
+#                              string only has minutes:seconds
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+  # Strings
+  my $day     = "";
+  my $hour    = "";
+  my $min     = "";
+  my $sec     = "";
+
+  # Scalars
+  my $numVal  = 0;
+  my $numDay  = 0;
+  my $numHour = 0;
+  my $numMin  = 0;
+  my $numSec  = 0;
+  my $nTime   = 0;
+  
+  # Arrays
+  my @temp1   = ();
+  my @temp2   = ();
+
+  # Check if time is in format DD-hh:mm:ss
+  if ( $time  =~ m/\-/ ) {
+
+    # Split up string into days, hours, minutes, and seconds
+    @temp1    = split( "-", $time );
+    $day      = $temp1[0];
+    @temp2    = split( ":", $temp1[1]);
+    $hour     = $temp2[0];
+    $min      = $temp2[1];
+    $sec      = $temp2[2];
+
+    # Convert to numbers
+    $numDay   = $day;
+    $numHour  = $hour;
+    $numMin   = $min;
+    $numSec   = $sec;
+
+    # Calculate time in seconds
+    $numVal   = ( $numDay * 24.0 * 3600.0 ) + ( $numHour * 3600.0 ) +
+                ( $numMin * 60.0 ) + $numSec;
+    return( $numVal );
+
+  }
+
+  if ( $time  =~ m/\:/ ) {
+
+    @temp2    = split( ":", $time);
+    $nTime    = scalar(@temp2);
+
+    # Time is in format hh:mm:ss
+    if ( $nTime == 3 ) {
+
+      # Split up string into hours, minutes, and seconds
+      $hour     = $temp2[0];
+      $min      = $temp2[1];
+      $sec      = $temp2[2];
+
+      # Convert to numbers
+      $numHour  = $hour;
+      $numMin   = $min;
+      $numSec   = $sec;
+
+      # Calculate time in seconds
+      $numVal   = ( $numHour * 3600.0 ) + ( $numMin * 60.0 ) + $numSec;
+      return( $numVal );
+
+    # Time is in format mm:ss
+    } elsif ( $nTime == 2 ) {
+
+      # Split up string into minutes, and seconds
+     $min      = $temp2[0];
+     $sec      = $temp2[1];
+
+      # Convert to numbers
+      $numMin   = $min;
+      $numSec   = $sec;
+
+      # Calculate time in seconds
+      $numVal   = ( $numMin * 60.0 ) + $numSec;
+      return( $numVal );
+
+    }
+
+  }
+
+  # Otherwise, return the original value
+  return( $time );
+}
+#EOC
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOC
+#
+# !IROUTINE: getJobStats
+#
+# !DESCRIPTION: Calls "jobinfo" to obtain select job information from SLURM and
+#  calculates the cpu time/wall time metric.
+#\\
+#\\
+# !INTERFACE:
+#
+sub getJobStats($$) {
+#
+# !INPUT PARAMETERS: 
+#
+  my ( $jobId ) = @_;
+#
+# !REVISION HISTORY:
+#  30 Oct 2015 - M. Sulprizio- Initial version based on scale script from Bob Y.
+#  02 Nov 2015 - R. Yantosca - Now use TotalCPU for the CPU time
+#  10 Nov 2015 - R. Yantosca - Also add the % of ideal performance
+#  18 Nov 2015 - R. Yantosca - Add extra error checks to avoid perl warnings
+#  17 Dec 2015 - R. Yantosca - Add a check to properly report the MaxRSS value 
+#                              if sacct returns 5 substrings instead of 4
+#  07 Feb 2017 - R. Yantosca - Updated to search for statistics from the proper
+#                              computational queue (via updated jobinfo script)
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+
+  # Arrays
+  my @log       = ();
+  my @temp      = ();
+
+  # Numeric scalars
+  my $allocCPU  =  0;
+  my $ind       = -1;
+  my $indBatch  = -1;
+  my $indTime   = -1;
+  my $indName   =  2;
+  my $numCPU    =  0;
+  my $numWall   =  0;
+  my $scaling   =  0;
+  my $percent   =  0;
+
+  # Strings
+  my $line      = "";
+  my $jobName   = "";
+  my $partition = "";
+  my $node      = "";
+  my $ncpu      = "";
+  my $memory    = "";
+  my $subTime   = "";
+  my $begTime   = "";
+  my $endTime   = "";
+  my $cpuTime   = "";
+  my $wallTime  = "";
+  my $word      = "";
+
+  # Get the statistics for the given JobID from the jobinfo script
+  @log = qx( jobinfo $ARGV[0] );
+
+  # Exit with error if invalid JobID is given
+  if ( $? != 0 ) {
+    print "Job ID $ARGV[0] not found, exiting...\n";
+    exit(1); 
+  }
+
+  # Loop thru each line of the SGE statistics
+  foreach $line ( @log ) {
+
+    # Remove trailing newline
+    chomp( $line );
+
+    # Look for JobName
+    if ( $line =~ m/JobName/ ) {
+      @temp = split( " ", $line );
+      
+      # Look for the "batch" or "time" columns.
+      for ( my $i = 0; $i < scalar( @temp ); $i++ ) {
+	if ( $temp[$i] eq "batch" ) { $indBatch = $i; }
+	if ( $temp[$i] eq "time"  ) { $indTime  = $i; }
+      }
+       
+      # Pick the column from which to get data
+      # Search priority: "time", "batch", then job name column
+      if    ( $indBatch > 0 && $indTime > 0 ) { $ind = $indTime;  }
+      elsif ( $indBatch > 0                 ) { $ind = $indBatch; }
+      else                                    { $ind = $indName;  }
+
+      $jobName = $temp[$indName];
+    }
+
+     # Look for Partition
+    if ( $line =~ m/Partition/ ) {
+      @temp = split( " ", $line );
+      $partition = $temp[$indName];
+    }
+
+    # Look for Node
+    if ( $line =~ m/MaxVMSizeNode/ ) {
+      @temp = split( " ", $line );
+      $node = $temp[$ind];
+    }
+
+    # Look for number of CPUs
+    if ( $line =~ m/AllocCPU/ ) {
+      @temp     = split( " ", $line );
+      $ncpu     = $temp[$ind];
+      $allocCPU = $ncpu;
+    }
+
+    # Look for memory usage
+    if ( $line =~ m/MaxRSS / ) {
+      @temp   =  split( " ", $line );
+      $memory =  $temp[$ind];
+      $memory =~ s/GB/ GB/g;
+    }
+
+    # Look for time submitted
+    if ( $line =~ m/Submit/ ) {
+      @temp    =  split( " ", $line );
+      $subTime =  $temp[$indName];
+      $subTime =~ s/\|/ /g;
+    }
+
+    # Look for run start time
+    if ( $line =~ m/Start/ ) {
+      @temp    =  split( " ", $line );
+      $begTime =  $temp[$indName];
+      $begTime =~ s/\|/ /g;
+    }
+
+    # Look for run finish time
+    if ( $line =~ m/End/ ) {
+      @temp    =  split( " ", $line );
+      $endTime =  $temp[$indName];
+      $endTime =~ s/\|/ /g;
+    }
+
+    # Look for CPU time
+    if ( $line =~ m/TotalCPU / ) {
+      @temp    =  split( " ", $line );
+      $cpuTime =  $temp[$indName];
+    }
+
+    # Look for wall clock time
+    if ( $line =~ m/Elapsed/ ) {
+      @temp     = split( " ", $line );
+      $wallTime = $temp[$indName];
+    }
+
+  }
+
+  # Compute CPU and wall times to seconds
+  $numCPU  = &convertToSec( $cpuTime );
+  $numWall = &convertToSec( $wallTime );
+
+  # Skip if the wall time is zero (i.e. if job hasn't finished)
+  if ( $numWall > 0 ) { 
+
+    # Compute the ratio CPU Time to Wall Time
+    $scaling = $numCPU / $numWall;
+    $scaling = &round( $scaling, 0.0001 );
+
+    # Compute percentage of ideal performance
+    $percent = ( $scaling / $allocCPU ) * 100.0;
+    $percent = &round( $percent, 0.01 );
+  }				
+
+  # Print info
+  print  "SLURM JobID #         : $jobId\n";
+  print  "Job Name              : $jobName\n";
+  print  "Submit time           : $subTime\n";
+  print  "Start  time           : $begTime\n";
+  print  "End    time           : $endTime\n";
+  print  "Partition             : $partition\n";
+  print  "Node                  : $node\n";
+  print  "CPUs                  : $ncpu\n";
+  print  "Memory                : $memory\n";
+  printf "CPU  Time             : %-11s (%11d s)\n", "$cpuTime", $numCPU;
+  printf "Wall Time             : %-11s (%11d s)\n", "$wallTime", $numWall;
+  printf "CPU  Time / Wall Time : %-11s ( %.2f\%% ideal)\n", "$scaling", $percent;
+
+  # Return error status
+  return( $? );
+}
+#EOC
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: main
+#
+# !DESCRIPTION: Gets the # of arguments and calls &getJobStats.
+#\\
+#\\
+# !INTERFACE:
+#
+sub main() {
+#
+# !REVISION HISTORY:
+#  20 Oct 2015 - M. Sulprizio- Initial version
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+
+  # Pass the job ID (and optional column width) to the &getJobInfo routine.
+  # If column-width is not specified, use a default value of 20.
+  if    ( scalar( @ARGV ) == 1 ) { &getJobStats( @ARGV     );       }
+  else                           { print "USAGE: jobstats JOBID\n"; }
+
+  # Return error status
+  return ( $? );
+}
+#EOC
+#------------------------------------------------------------------------------
+#BOC
+
+# Run main program
+main();
+
+# Return with error status
+exit( $? );
+#EOC

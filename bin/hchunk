@@ -1,0 +1,50 @@
+#!/bin/bash
+
+#EOC
+#------------------------------------------------------------------------------
+#                  GEOS-Chem Global Chemical Transport Model                  !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !MODULE: hchunk
+#
+# !DESCRIPTION: Chunks and deflates netCDF data files in the proper
+#  manner for GEOS-Chem.  Also sets the proper group and write permissions 
+#  for the gcgrid folder.
+#\\
+#\\
+# !CALLING SEQUENCE: 
+#  hchunk      # Use netCDF level 1 deflation by default
+#  hchunk 5    # Use netCDF level 5 deflation
+#
+# !REMARKS:
+#  Requires the nc_chunk.pl script, which does the actual chunking
+#  and deflation.
+#
+# !REVISION HISTORY:
+#  06 Jan 2015 - R. Yantosca - Initial version
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+
+# Use netCDF deflation level 1 by default
+if [[ "x$1" == "x" ]]; then
+   deflation=1
+else
+   deflation=$1
+fi
+
+# Loop over all netCDF files
+for file in *.nc*; do
+
+  # Chunk and compress each file
+  nc_chunk.pl $file $deflation
+
+  # Change group to jacob-gcst
+  chgrp jacob_gcst $file
+
+  # Add write permissions for jacob-gcst members
+  chmod 664 $file
+ 
+done
+#EOC

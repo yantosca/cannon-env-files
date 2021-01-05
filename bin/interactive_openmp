@@ -1,0 +1,67 @@
+#!/bin/bash
+
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !MODULE: interactive_openmp
+#
+# !DESCRIPTION: Shell script to request an interactive session on Odyssey,
+#  geared for OpenMP jobs (i.e. all Cores on the same node).
+#\\
+#\\
+# !CALLING SEQUENCE:
+#  interactive CORES MEM-PER-NODE [TIME-IN-MINUTES] [PARTITION]
+#
+# !REMARKS:
+#  Executes the srun command to start an interactive SLURM session.
+#  If PARTITION is omitted, then the job will start on the "jacob" partition.
+#  If TIME-IN-MINUTES is omitted, then the job will run for 60 minutes.
+#
+# !REVISION HISTORY: 
+#  Use the gitk browser to view the Git version history.
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+
+# Process the input arguments.  Use defaults if the
+# user supplies less than 3 argumetnts. (bmy, 7/10/15)
+if [[ $# == 4 ]]; then
+   cores=$1
+   mem=$2
+   time=$3
+   part=$4
+elif [[ $# == 3 ]]; then
+   cores=$1
+   mem=$2
+   time=$3
+   part=test
+elif [[ $# == 2 ]] ; then
+   cores=$1
+   mem=$2
+   time=60
+   part=test
+else
+   echo "Usage: interactive_openmp CORES MEM-PER-NODE [TIME-IN-MINUTES] [PARTITION]"
+   exit 1
+fi
+
+# Print information
+echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo "%%% Starting an Odyssey interactive session!"
+echo "%%%"
+echo "%%% Number of Cores     : $cores"
+echo "%%% Number of Nodes     : 1"
+echo "%%% Memory per node     : $mem MB"
+echo "%%% Requested time      : $time minutes"
+echo "%%% Requested partition : $part"
+echo "%%%"
+echo "%%% Reminder: Make sure \$OMP_NUM_THREADS in your shell is set"
+echo "%%% to the same number of cores that you requested!"
+echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+
+# Start the interactive session
+srun --pty --x11=first -c $cores -N 1 --mem=$mem -t $time -p $part /bin/bash
+
+#EOC

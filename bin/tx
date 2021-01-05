@@ -1,0 +1,21 @@
+#!/bin/tcsh -f
+
+#==============================================================================
+# tx: Extracts a directory in one fell swoop (bmy, 6/7/11)
+#==============================================================================
+
+# Error check # of arguments
+if ( $#argv < 1 || $#argv > 2 ) then
+   echo "Usage: tx DIR [REMOVE]"
+endif
+
+# Extract the directory
+tar -xvzf $1.tar.gz
+
+# Optional: remove the tar file after unzipping
+if (  $#argv == 2 ) then
+   rm -rf $1.tar.gz
+endif
+
+# Exit normally
+exit(0)

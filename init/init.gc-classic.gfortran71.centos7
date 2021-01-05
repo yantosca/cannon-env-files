@@ -1,0 +1,127 @@
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !MODULE: init.gc-classic.gfortran71.centos7
+#
+# !DESCRIPTION: Bash script that loads the proper modules and sets
+#  environment variables for GNU Fortran 7.1 and CentOS7.
+#\\
+#\\
+# !CALLING SEQUENCE:
+#  source ~/init/init.gc-classic.gfortran71.centos7
+#
+# !REMARKS:
+#
+# !REVISION HISTORY:
+#  Change directory to ~/env and type 'gitk' at the prompt to browse
+#  revision history.
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+
+#==============================================================================
+# %%%%% Clear existing environment variables %%%%%
+#==============================================================================
+unset CC
+unset CXX
+unset EMACS_HOME
+unset FC
+unset F77
+unset F90
+unset IDL_HOME
+unset NETCDF_HOME
+unset NETCDF_INCLUDE
+unset NETCDF_LIB
+unset NETCDF_FORTRAN_HOME
+unset NETCDF_FORTRAN_INCLUDE
+unset NETCDF_FORTRAN_LIB
+unset OMP_NUM_THREADS
+unset OMP_STACKSIZE
+unset PERL_HOME
+
+#==============================================================================
+# %%%%% Load modules for GNU Fortran 7.1 %%%%%
+#
+# NOTE: Specify version numbers to avoid conflicting w/ EasyBuild modules
+#==============================================================================
+echo "Loading gfortran 7.1.0 and related libraries ..."
+export LMOD_COLORIZE=yes
+module purge
+
+# List each RC-built package that you want to load
+# (add the backslash after each new package that you add)
+pkgs=(                         \
+  git/2.17.0-fasrc01           \
+  perl/5.26.1-fasrc01          \
+  IDL/8.4.1-fasrc01            \
+  flex/2.6.4-fasrc01           \
+  gcc/7.1.0-fasrc01            \
+  openmpi/2.1.0-fasrc02        \
+  netcdf/4.3.2-fasrc05         \
+  netcdf-fortran/4.4.0-fasrc03 \
+  cdo/1.9.4-fasrc02            \
+  nco/4.7.4-fasrc01            \
+  ncview/2.1.7-fasrc02         \
+  cmake/3.17.3-fasrc01         \
+  emacs/26.1-fasrc01           \
+)
+
+# Load each RC-built package
+for f in ${pkgs[@]}; do
+    echo "Loading $f"
+    module load $f
+done
+
+# Define F90 and F77 environment variables (may be needed by some software)
+export F90=$FC
+export F77=$FC
+
+# List both RC-built and Spack-built modules
+module list
+
+#==============================================================================
+# %%%%% Settings for OpenMP parallelization %%%%%
+#==============================================================================
+
+# Max out the stack memory for OpenMP
+# Asking for a huge number will just give you the max availble
+export OMP_STACKSIZE=500m
+
+# By default, set the number of threads for OpenMP parallelization to 1
+export OMP_NUM_THREADS=1
+
+# Redefine number threads for OpenMP parallelization
+# (a) If in a SLURM partition, set OMP_NUM_THREADS = SLURM_CPUS_PER_TASK
+# (b) Or, set OMP_NUM_THREADS to the optional first argument that is passed
+if [[ -n "${SLURM_CPUS_PER_TASK+1}" ]]; then
+  export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+elif [[ "$#" -eq 1 ]]; then
+  if [[ "x$1" != "xignoreeof" ]]; then
+    export OMP_NUM_THREADS=$1
+  fi
+fi
+echo "Number of OpenMP threads: $OMP_NUM_THREADS"
+
+#==============================================================================
+# %%%%% Echo relevant environment variables %%%%%
+#==============================================================================
+echo
+echo "Important environment variables:"
+echo "CC  (C compiler)       : $CC"
+echo "CXX (C++ compiler)     : $CXX"
+echo "FC  (Fortran compiler) : $FC"
+echo "NETCDF_HOME            : $NETCDF_HOME"
+echo "NETCDF_INCLUDE         : $NETCDF_INCLUDE"
+echo "NETCDF_LIB             : $NETCDF_LIB"
+echo "NETCDF_FORTRAN_HOME    : $NETCDF_FORTRAN_HOME"
+echo "NETCDF_FORTRAN_INCLUDE : $NETCDF_FORTRAN_INCLUDE"
+echo "NETCDF_FORTRAN_LIB     : $NETCDF_FORTRAN_LIB"
+
+#==============================================================================
+# %%%%% Other settings %%%%%
+#==============================================================================
+
+# The cgdb debugger is installed manually due to Spack issues
+alias cgdb=/n/jacob_lab/Lab/Apr2020/cgdb-0.7.1/bin/cgdb

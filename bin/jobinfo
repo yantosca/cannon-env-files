@@ -1,0 +1,477 @@
+#!/usr/bin/perl -w
+
+#EOC
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !MODULE: jobinfo
+#
+# !DESCRIPTION: Parses the SLURM command "sacct -l -j" (which returns 
+#  job status information) into a more readable format.
+#\\
+#\\
+# !USES:
+#
+ require 5.003;
+ use strict;
+ use English;
+ use Carp;
+ use Scalar::Util qw(looks_like_number);
+#
+# !PUBLIC DATA MEMBERS:
+#
+ our $PER_CPU = 0;
+#
+# !CALLING SEQUENCE:
+#  jobinfo JOBID 30  # Prints sacct output, w/ 30 chars for job name
+#  jobinfo JOBID     # Prints sacct output, w/ 20 chars (default) for job name
+#
+# !REMARKS:
+#  The "sacct -l -j JOBID" command returns the following output:
+#
+#    Line 1   : Column titles
+#    Line 2   : Separators (e.g. "------")
+#    Lines 3- : SLURM accounting data for job JOBID
+#
+#  NOTE: if the job was requeued, then there may be more than one line
+#  of accounting data, one per each job submission.
+#
+#  Also, if the job is currently not finished, there may not be any SLURM
+#  accounting data to report.  In this case, jobinfo will return a blank line.
+#
+# !REVISION HISTORY:
+#  27 Oct 2015 - R. Yantosca - Initial version
+#  30 Oct 2015 - R. Yantosca - Add more display options
+#EOP
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: round
+#
+# !DESCRIPTION: Rounds a number to any place.
+#\\
+#\\
+# !INTERFACE:
+#
+sub round($$) {
+#
+# !INPUT PARAMETERS: 
+#
+  my( $num, $prec )= @_;   # Number and precision
+#
+# !CALLING SEQUENCE:
+#  $result = &round( $num, 10.0 )   # Rounds to nearest 10
+#  $result = &round( $num, 1.0  )   # Rounds to nearest 1
+#  $result = &round( $num, 0.1  )   # Rounds to nearest 0.1
+#  $result = &round( $num, 0.01 )   # Rounds to nearest 0.01, etc.
+#
+# !REMARKS:
+#  Taken from http://www.perlmonks.org/?node_id=30195
+#
+# !REVISION HISTORY:
+#  27 Oct 2015 - R. Yantosca - Initial version
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+
+  return int( $num/$prec + 0.5 - ($num<0) ) * $prec;
+}
+#EOC
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: convertToGb
+#
+# !DESCRIPTION: Converts kilobytes and megabytes to gigabytes.
+#\\
+#\\
+# !INTERFACE:
+#
+sub convertToGb($) {
+#
+# !INPUT PARAMETERS: 
+#
+  # $data : One of the fields w/ info from the SLURM job
+  my ( $data ) = @_;
+#
+# !REMARKS:
+#  Looks for strings ending in "Mc" (MB/cpu), "M", or "K", and uses that
+#  to convert units to Gigabytes.
+#
+# !REVISION HISTORY:
+#  27 Oct 2015 - R. Yantosca - Initial version
+#  10 Nov 2015 - R. Yantosca - Now correclty report memory per node
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+  # Strings
+  my $len        = length( $data            );
+  my $lastChar   = substr( $data, $len-1, 1 );
+  my $last2Chars = substr( $data, $len-2, 2 );
+  my $numStr     = "";
+
+  # Scalars
+  my $numVal     = 0;
+
+  # Convert MB/cpu -> GB/cpu
+  if ( $last2Chars =~ m/Mc/ ) {
+    $numStr = substr( $data, 0, $len-2 );
+    if ( looks_like_number( $numStr ) ) {
+      $numVal  = $numStr;
+      $numVal  = $numVal / 1000.0;
+      $numVal  = &round( $numVal, 0.0001 );
+      $numStr  = "$numVal"."GB/cpu";
+      $PER_CPU = 1;
+      return( $numStr );
+    }
+  }
+
+  # Convert MB/node -> GB/node
+  if ( $last2Chars =~ m/Mn/ ) {
+    $numStr = substr( $data, 0, $len-2 );
+    if ( looks_like_number( $numStr ) ) {
+      $numVal  = $numStr;
+      $numVal  = $numVal / 1000.0;
+      $numVal  = &round( $numVal, 0.0001 );
+      $numStr  = "$numVal"."GB/node";
+      $PER_CPU = 0;
+      return( $numStr );
+    }
+  }
+
+  # Convert MB -> GB
+  if ( $lastChar =~ m/M/ ) {
+    $numStr = substr( $data, 0, $len-1 );
+    if ( looks_like_number( $numStr ) ) {
+      $numVal  = $numStr;
+      $numVal  = $numVal / 1000.0;
+      $numVal  = &round( $numVal, 0.001 );
+      $numStr  = "$numVal"."GB";
+      return( $numStr );
+    }
+  }
+
+  # Convert KB -> GB
+  if ( $lastChar =~ m/K/ ) {
+    $numStr = substr( $data, 0, $len-1 );
+    if ( looks_like_number( $numStr ) ) {
+      $numVal  = $numStr;
+      $numVal  = $numVal / 1000000.0;
+      $numVal  = &round( $numVal, 0.0001 );
+      $numStr  = "$numVal"."GB";
+      return( $numStr );
+    }
+  }
+
+  # If the last character is already G, then add a space
+  if ( $lastChar =~ m/G/ ) {
+    $numStr = substr( $data, 0, $len-1 );
+    if ( looks_like_number( $numStr ) ) {
+      $numStr  = "$numStr"."GB";
+      return( $numStr );
+    }
+  }
+
+  # Otherwise, return the original data value
+  return( $data );
+}
+#EOC
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: getJobInfo
+#
+# !DESCRIPTION: Calls "sacct -l -j" and parses the output into a more
+#  readable format.
+#\\
+#\\
+# !INTERFACE:
+#
+sub getJobInfo($$) {
+#
+# !INPUT PARAMETERS: 
+#
+  my ( $jobId, $nameWidth ) = @_;
+#
+# !REVISION HISTORY:
+#  27 Oct 2015 - R. Yantosca - Initial version
+#  30 Oct 2015 - M. Sulprizio- Add submit, start, and end time to sacct command
+#  30 Oct 2015 - R. Yantosca - Print out total requested memory as the last
+#                              line (Number of CPUs * memory per CPU)
+#  02 Nov 2015 - R. Yantosca - Bug fix: CPUFreq fields should be GHz, not GB
+#  07 Feb 2017 - R. Yantosca - Display "-" instead of "" for blank fields
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+#
+# !LOCAL VARIABLES:
+#
+  # Strings
+  my $column    = "";
+  my $data      = "";
+  my $dataStr   = "";
+  my $header    = "";
+  my $output    = "";
+  my $tmpStr    = "";
+  my $YMD       = "";
+  my $HMS       = "";
+
+  # Scalars	 
+  my $hdrWidth  = 0;
+  my $nCols     = 0;
+  my $nCpus     = 0;
+  my $nNodes    = 0;
+  my $nLines    = 0;
+  my $maxWidth  = 0;
+  my $reqMem    = 0;
+  my $tmpVal    = 0;
+  my $start     = 0;
+  my $prtTotMem = 0;
+  my $width     = 0;
+
+  # Arrays
+  my @columns   = ();
+  my @colStart  = ();
+  my @colWidth  = ();
+  my @result    = ();
+  my @headers   = ();
+
+  #-------------------------------------------------------------------------
+  # (1) Get the output from the sacct command
+  #-------------------------------------------------------------------------
+
+  # Output from sacct
+  @result = qx/sacct --format=JobName%$nameWidth,Submit,Start,End,JobID,Partition,NNodes,NCPUs,Elapsed,State,ExitCode,MaxRSS,MaxVMSizeNode,AllocCPU,UserCPU,TotalCPU -j $jobId/;
+
+  # Number of lines returned
+  $nLines = scalar( @result );
+
+  # Exit if there is no data yet
+  if ( $nLines < 3 ) { 
+    print "jobinfo: Could not find data for job $jobId!\n";
+    exit(0);
+  }
+
+  #-------------------------------------------------------------------------
+  # (2) Find the maximum width of the column headers
+  #-------------------------------------------------------------------------
+
+  # Colunn headers
+  @headers = split( /\s+/, $result[0] );
+
+  # Maximum title width (we'll use this for string padding later)
+  foreach $header ( @headers ) {
+    $width = length( $header );
+    if ( $width > $hdrWidth ) { $hdrWidth = $width; }
+  }
+
+  #-------------------------------------------------------------------------
+  # (3) Use the separators to find the starting position and the width 
+  #     of each column.  This will let us parse the output properly.
+  #-------------------------------------------------------------------------
+
+  # Separators, as returned by looking at the 2nd line
+  @columns = split( /\s+/, $result[1] );
+
+  # Number of columns = number of separators
+  $nCols   = scalar( @columns );
+
+  # Loop thorugh each column 
+  foreach $column ( @columns ) {
+
+    # Width of the column, and its ending location
+    $width    = length( $column );
+
+    # Find the maximum column width (for padding spaces below)
+    if ( $width > $maxWidth ) { $maxWidth = $width; }
+
+    # Starting and ending location of each column position of the column
+    @colStart = ( @colStart, $start );
+    @colWidth = ( @colWidth, $width );
+
+    # Increment the starting position by leaving a space
+    $start    = $start + $width + 1
+  }
+ 
+  #-------------------------------------------------------------------------
+  # (4) Parse the output of sacct into strings for display
+  #-------------------------------------------------------------------------
+
+  # First loop over the # of columns
+  for ( my $i = 0; $i < $nCols;  $i++ ) {
+
+    # Initialize
+    $dataStr = "";
+
+    # The first line ($result[0]) are the column headers
+    $header = substr( $result[0], $colStart[$i], $colWidth[$i] );
+    $header =~ s/\s+//g;
+
+    # Pad to the maximum header width
+    $header .= " " x ( $hdrWidth - length( $header ) );
+    
+    # Loop over the number of lines of output (accounting data starts
+    # at the 3rd line).  Get the data values from each column and 
+    # prepare them for top-to-bottom output display.
+    for ( my $j = 2; $j < $nLines; $j++ ) {
+
+      # Skip if the column has no data
+      if ( length( $result[$j] ) > 0 ) {
+
+	# Get the data value from each column in this line
+	$data =  substr( $result[$j], $colStart[$i], $colWidth[$i] );
+	$data =~ s/\s+//g;
+
+	# Add a "-" to the output for blank spaces, which will facilitate 
+	# parsing the output with the jobstats script (bmy, 2/7/17)
+	if ( length( $data ) == 0 ) { $data = "-"; }
+
+	# Convert memory units to GB (if necessary)
+	if ( !( $header =~ m/Job/    ) && 
+             !( $header =~ m/Node/   ) &&
+             !( $header =~ m/Task/   ) &&
+             !( $header =~ m/Start/  ) && 
+             !( $header =~ m/Submit/ ) &&
+             !( $header =~ m/End/    ) ) {
+	  $data = &convertToGb( $data ); 
+        }
+
+	# If the data value is CPU frequency, units should be GHz
+	if ( $header =~ m/CPUFreq/ ) {
+	  $data =~ s/GB/GHz/g;
+        }
+
+	# Extract the start, submit, and end times
+	# (Skip formatting if the time value is "Unknown")
+	if ( ( $header =~ m/Start/  ) || 
+             ( $header =~ m/Submit/ ) ||
+             ( $header =~ m/End/    )    ) {
+	  if ( !( $data =~ m/Unknown/ ) ) {
+	    $YMD  = substr( $data,  0, 10 );
+	    $HMS  = substr( $data, 11, 18 );
+	    $data = "$YMD|$HMS";
+	  }
+	}
+
+	# Save the # of CPUs for use below
+	if ( $header =~ m/AllocCPUS/ ) { 
+	  if ( looks_like_number( $data ) ) { $nCpus = $data;  }
+	  else                              { $nCpus = 0;      }
+        } 
+
+	# Get the # of nodes for use below
+	if ( $header =~ m/NTasks/    ) { 
+	  if ( looks_like_number( $data ) ) { $nNodes = $data; }
+	  else                              { $nNodes = 0;     }
+        }
+
+	# Save the requested memory for use below
+	if ( $header =~ m/ReqMem/ ) { 
+	  $tmpStr =  $data; 
+	  $tmpStr =~ s/GB\/cpu//g;
+	  $tmpStr =~ s/GB\/node//g;
+	  $reqMem =  $tmpStr;
+        }
+      	
+	# Pad the string to the column width
+	$data    .=  " " x ( $maxWidth + 1 - length( $data ) );
+	$dataStr .= "$data ";
+
+      } else {
+
+	# If there is no data value, create a blank string
+        $dataStr .=  " " x ( $maxWidth + 1 );
+
+      }
+    }
+
+    # Append header and data values to a string for display.
+    # Skip if all jobs have no data for this column.
+    $tmpStr = $dataStr;
+    $tmpStr =~ s/\s+//g;
+    if ( length( $tmpStr ) > 0 ) { 
+      $output .= "$header : $dataStr\n";  
+    }
+  }
+        
+  # Compute the total memory used across all CPUs and nodes
+  # Skip if sacct has not returned the # of CPUs or nodes (i.e. if running)
+  if ( $nNodes * $nCpus > 0 ) { 
+
+    # Initialize
+    $tmpVal = 0;
+    
+    # Total memory across all CPUs and nodes
+    if ( $PER_CPU > 0 ) { $tmpVal = $reqMem * $nNodes * $nCpus; }
+    else                { $tmpVal = $reqMem * $nNodes;          }
+
+    # Format for display
+    $tmpVal  = &round( $tmpVal, 0.0001 );
+    $tmpStr  = "$tmpVal"."GB";
+    $output .= "TotalReqMem" . " "x( $hdrWidth - 11) . " : ";
+    for ( my $j = 2; $j < $nLines; $j++ ) { 
+      $output .= $tmpStr . " "x( $maxWidth - length( $tmpStr ) );
+      $output .= "  ";
+    }
+
+    # Add a newline at the end
+    $output .= "\n";
+  }
+
+  #-------------------------------------------------------------------------
+  # (4) Display results!
+  #------------------------------------------------------------------------- 
+  print "$output\n";
+
+  # Return error status
+  return( $? );
+}
+#EOC
+#------------------------------------------------------------------------------
+#          Harvard University Atmospheric Chemistry Modeling Group            !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: main
+#
+# !DESCRIPTION: Gets the # of arguments and calls &getJobinfo.
+#\\
+#\\
+# !INTERFACE:
+#
+sub main() {
+#
+# !REVISION HISTORY:
+#  27 Oct 2015 - R. Yantosca - Initial version
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+
+  # Pass the job ID (and optional column width) to the &getJobInfo routine.
+  # If column-width is not specified, use a default value of 20.
+  if    ( scalar( @ARGV ) == 2 ) { &getJobInfo( @ARGV     );       }
+  elsif ( scalar( @ARGV ) == 1 ) { &getJobInfo( @ARGV, 20 );       }
+  else                           { print "USAGE: jobinfo JOBID\n"; }
+
+  # Return error status
+  return ( $? );
+}
+
+#------------------------------------------------------------------------------
+
+# Run main program
+main();
+
+# Return with error status
+exit( $? );

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+
+# Compress using netCDF compression level 1
+nccopy -d0 $1 tmp.nc
+mv tmp.nc $1
+

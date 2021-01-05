@@ -1,0 +1,38 @@
+#!/bin/bash
+
+#------------------------------------------------------------------------------
+#                  GEOS-Chem Global Chemical Transport Model                  !
+#------------------------------------------------------------------------------
+#BOP
+#
+# !IROUTINE: ncp1
+#
+# !DESCRIPTION: Compresses a netCDF file using level 1 compression.  This
+#  is the lowest level of compression, but is usually sufficient to reduce
+#  file sizes significantly.
+#\\
+#\\
+# !CALLING SEQUENCE:
+#  ncp1 FILENAME
+#
+# !REMARKS:
+#  (1) Relies on the nccopy command, as installed with your netCDF library.
+#  (2) Also relies on the ncatted command from the netCDF operators (NCO).
+#
+# !REVISION HISTORY:
+#  06 Jan 2015 - R. Yantosca - Initial version
+#EOP
+#------------------------------------------------------------------------------
+#BOC
+
+# Make sure we pass at least one argument
+if [[ "$#" -ne 1 ]]; then
+  echo "Usage: ncp5 FILENAME"
+  exit
+fi
+
+# Compress the file
+nccopy -d5 $1 tmp.nc
+mv tmp.nc $1
+
+#EOC
