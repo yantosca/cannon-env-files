@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-#          Harvard University Atmospheric Chemistry Modeling Group            !
+#                  GEOS-Chem Global Chemical Transport Model                  !
 #------------------------------------------------------------------------------
 #BOP
 #
@@ -21,7 +21,7 @@
 #BOC
 
 # Source the .bashrc file if it exists
-if [ -f ~/.bashrc ]; then
+if [[ -f ~/.bashrc ]]; then
    . ~/.bashrc
 fi
 

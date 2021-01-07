@@ -1,12 +1,11 @@
 #------------------------------------------------------------------------------
-#          Harvard University Atmospheric Chemistry Modeling Group            !
+#                  GEOS-Chem Global Chemical Transport Model                  !
 #------------------------------------------------------------------------------
 #BOP
 #
-# !MODULE: .XDefaults
+# !MODULE: .Xresources
 #
-# !DESCRIPTION: The .Xdefaults file specifies defaults for Xterminal windows
-#  (and other X11 programs, if necessary).
+# !DESCRIPTION: Specifies defaults for Xterminal windows and X11 programs.
 #\\
 #\\
 # !REMARKS:
