@@ -1,0 +1,92 @@
+;;-*-coding: utf-8;-*-
+(define-abbrev-table 'Buffer-menu-mode-abbrev-table '())
+
+(define-abbrev-table 'Custom-mode-abbrev-table '())
+
+(define-abbrev-table 'cmake-mode-abbrev-table '())
+
+(define-abbrev-table 'completion-list-mode-abbrev-table '())
+
+(define-abbrev-table 'debugger-mode-abbrev-table '())
+
+(define-abbrev-table 'display-time-world-mode-abbrev-table '())
+
+(define-abbrev-table 'edit-abbrevs-mode-abbrev-table '())
+
+(define-abbrev-table 'elisp-byte-code-mode-abbrev-table '())
+
+(define-abbrev-table 'emacs-lisp-mode-abbrev-table '())
+
+(define-abbrev-table 'f90-mode-abbrev-table
+  '(
+    ("`ar" "" f90-skeleton-am-I-Root 0)
+    ("`do" "" f90-skeleton-do-enddo 0)
+    ("`do2" "" f90-skeleton-do-enddo-2 0)
+    ("`do3" "" f90-skeleton-do-enddo-3 0)
+    ("`do4" "" f90-skeleton-do-enddo-4 0)
+    ("`ife" "" f90-skeleton-if-else-endif 0)
+    ("`pb" "" f90-protex-bold 0)
+    ("`pdl" "" f90-protex-description-list 0)
+    ("`pel" "" f90-protex-enumerated-list 0)
+    ("`pi" "" f90-protex-italic 0)
+    ("`pil" "" f90-protex-itemized-list 0)
+    ("`plb" "" f90-protex-line-break 0)
+    ("`pu" "" f90-protex-underline 0)
+   ))
+
+(define-abbrev-table 'fortran-mode-abbrev-table
+  '(
+    (";ar" "" fortran-skeleton-am-I-Root 0)
+    (";b" "" fortran-comment-1 0)
+    (";ch" "" fortran-type-character 0)
+    (";d" "" fortran-comment-2 0)
+    (";do" "" fortran-skeleton-do-enddo 0)
+    (";do2" "" fortran-skeleton-do-enddo-2 0)
+    (";do3" "" fortran-skeleton-do-enddo-3 0)
+    (";do4" "" fortran-skeleton-do-enddo-4 0)
+    (";i4" "" fortran-type-integer4 0)
+    (";ife" "" fortran-skeleton-if-else-endif 0)
+    (";ii" "" fortran-intent-in 0)
+    (";iio" "" fortran-intent-inout 0)
+    (";io" "" fortran-intent-out 0)
+    (";pb" "" fortran-protex-bold 0)
+    (";pdl" "" fortran-protex-description-list 0)
+    (";pel" "" fortran-protex-enumerated-list 0)
+    (";pi" "" fortran-protex-italic 0)
+    (";pil" "" fortran-protex-itemized-list 0)
+    (";plb" "" fortran-protex-line-break 0)
+    (";pu" "" fortran-protex-underline 0)
+    (";r4" "" fortran-type-real4 0)
+    (";r8" "" fortran-type-real8 0)
+   ))
+
+(define-abbrev-table 'fundamental-mode-abbrev-table '())
+
+(define-abbrev-table 'global-abbrev-table '())
+
+(define-abbrev-table 'help-mode-abbrev-table '())
+
+(define-abbrev-table 'idlwave-help-mode-abbrev-table '())
+
+(define-abbrev-table 'idlwave-mode-abbrev-table
+  '(
+   ))
+
+(define-abbrev-table 'lisp-mode-abbrev-table '())
+
+(define-abbrev-table 'messages-buffer-mode-abbrev-table '())
+
+(define-abbrev-table 'occur-edit-mode-abbrev-table '())
+
+(define-abbrev-table 'occur-mode-abbrev-table '())
+
+(define-abbrev-table 'process-menu-mode-abbrev-table '())
+
+(define-abbrev-table 'prog-mode-abbrev-table '())
+
+(define-abbrev-table 'special-mode-abbrev-table '())
+
+(define-abbrev-table 'tabulated-list-mode-abbrev-table '())
+
+(define-abbrev-table 'text-mode-abbrev-table '())
+
