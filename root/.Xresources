@@ -39,6 +39,7 @@ xterm*font:            10x20
 !-------------------------------------------------------------------
 ! Specific fonts, check to see if these are installed locally
 !xterm*faceName:        DejaVu Sans Mono:size=12:embolden=true
+!xterm*faceName:        Lucidatypewriter Medium:size=13:embolden=true
 !xterm*faceName:        Source Code Pro Medium:size=12:embolden=true
 !-------------------------------------------------------------------
 !EOC
