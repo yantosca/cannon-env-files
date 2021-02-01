@@ -1,12 +1,11 @@
 !------------------------------------------------------------------------------
-!          Harvard University Atmospheric Chemistry Modeling Group            !
+!                  GEOS-Chem Global Chemical Transport Model                  !
 !------------------------------------------------------------------------------
 !BOP
 !
-! !MODULE: .XDefaults
+! !MODULE: .Xresources
 !
-! !DESCRIPTION: The .Xdefaults file specifies defaults for Xterminal windows
-!  (and other X11 programs, if necessary).
+! !DESCRIPTION: Specifies defaults for Xterminal windows and X11 programs.
 !\\
 !\\
 ! !REMARKS:
@@ -18,20 +17,28 @@
 !    http://infohost.nmt.edu/tcc/help/pubs/dotfiles/xdefaults.html
 !
 ! !REVISION HISTORY:
-!  21 Jun 2012 - R. Yantosca - Initial version
+!  Check the revision history with the gitk browser!
 !EOP
 !------------------------------------------------------------------------------
 !BOC
-XTerm*Background:      DarkSlateGray
-XTerm*Foreground:      LemonChiffon
-XTerm*CursorColor:     FireBrick
-XTerm*TermType:        xterm-256colors
-XTerm*Geometry:        90x26+0+0
-XTerm*Font:            10x20
-XTerm*SaveLines:       500
-XTerm*ScrollBar:       true
-XTerm*TitleBar:        true
-XTerm*TextUnderIcon:   true
-XTerm*AllowIconInput:  true
-XTerm*AutoRaise:       true
+
+xterm*background:      DarkSlateGray
+xterm*foreground:      LemonChiffon
+xterm*cursorColor:     FireBrick
+xterm*termType:        xterm
+xterm*geometry:        90x26+0+0
+xterm*saveLines:       10000
+xterm*scrollBar:       true
+xterm*titleBar:        true
+xterm*textUnderIcon:   true
+xterm*allowIconInput:  true
+xterm*autoRaise:       true
+!-------------------------------------------------------------------
+! Generic font, should work on any Linux installation
+xterm*font:            10x20
+!-------------------------------------------------------------------
+! Specific fonts, check to see if these are installed locally
+!xterm*faceName:        DejaVu Sans Mono:size=12:embolden=true
+!xterm*faceName:        Source Code Pro Medium:size=12:embolden=true
+!-------------------------------------------------------------------
 !EOC
