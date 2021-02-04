@@ -84,7 +84,7 @@ alias tmuxde="tmux detach "
 # Aliases for Git commands
 source /etc/bash_completion.d/git    # enable tab-completion
 alias clone_gcc="git clone git@github.com:geoschem/GCClassic.git"
-alias clone_gchp="git clone git@github.com:geoschem/gchpctm.git"
+alias clone_gchp="git clone git@github.com:geoschem/gchp.git"
 alias clone_hco="git clone git@github.com:geoschem/hemco.git"
 alias getenv="cd ~/env; git pull origin master"
 alias gitc="git -C CodeDir"
@@ -93,7 +93,13 @@ alias glo="git log --oneline"
 alias glog="git -C src/GEOS-Chem log --oneline "
 alias gplog="git -C src/GCHP_GridComp/GEOSChem_GridComp/geos-chem log --oneline "
 alias glp="git log --pretty=format:'%h : %s' --topo-order --graph"
-alias getenv="cd ~/env; git pull origin master"
+alias gk="gitk 2>/dev/null &"
+alias gka="gitk --all 2>/dev/null &"
+alias gpo="git pull origin"
+alias gui="git gui 2>/dev/null &"
+alias gsu="git submodule update --init --recursive"
+alias hlog="git -C src/HEMCO log --oneline "
+alias hplog="git -C src/GCHP_GridComp/HEMCO_GridComp/HEMCO log --oneline "
 alias update_tags="git tag -l | xargs git tag -d && git fetch -t"
 
 function gcc2gc() {
@@ -138,10 +144,10 @@ function gbup() {
 }
 
 function gbrd() {
-  git branch -r -d origin/$1
+    ##### Remove a remote branch #####
+    git branch -r -d origin/$1
 }
 
-# Remove local and remote branches
 function gprune() {
     ##### Remove local and remote branches #####
     git branch -d $1
@@ -161,6 +167,11 @@ if [[ "x${HOSTNAME}" == "xholyjacob01.rc.fas.harvard.edu" ]]; then
   export LOCAL_HOME=/local/ryantosca
   alias lh="cd ${LOCAL_HOME}"
   alias lgc="cd ${LOCAL_HOME}/GC"
+
+  # KPP settings on holyjacob01
+  export KPP_HOME=/local/ryantosca/GC/KPP/kpp-2.2.3_01
+  export KPP_BIN=${KPP_HOME}/bin
+  export PATH=${PATH}:${KPP_BIN}
 fi
 
 function set_omp() {
@@ -192,6 +203,7 @@ export VAL_ROOT="${FTP_ROOT}/validation"
 export SCRATCH_HOME="${SCRATCH}/jacob_lab/$USER"
 alias sh="cd ${SCRATCH_HOME}"
 alias sgc="cd ${SCRATCH_HOME}/GC"
+alias cd_data="cd $dataDir"
 
 #==============================================================================
 # %%%%% netCDF %%%%%
@@ -202,6 +214,7 @@ alias pan="$HOME/bin/panoply.sh &"
 
 # NetCDF scripts
 alias ncpl="nc_chunk.pl"
+unset dataDir
 
 #==============================================================================
 # %%%%% Tmux %%%%%
@@ -408,19 +421,4 @@ export PYLINTRC=~/.pylint.rc
 
 # Temporary Python folder (avoids warning messages)
 export XDG_RUNTIME_DIR=/tmp/runtime-${USER}
-
-#==============================================================================
-# %%%%% KPP settings %%%%%
-#==============================================================================
-
-# KPP settings are only visible from holyjacob01
-if [[ "x${HOSTNAME}" == "xholyjacob01.rc.fas.harvard.edu" ]]; then
-    export KPP_HOME=/local/ryantosca/GC/KPP/kpp-2.2.3_01
-    export KPP_BIN=${KPP_HOME}/bin
-else
-    export KPP_HOME="$HOME/KPP/kpp-2.2.3_01"
-    export KPP_BIN=${KPP_HOME}/bin
-fi    
-export PATH=${PATH}:${KPP_BIN}
-
 #EOC
