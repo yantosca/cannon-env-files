@@ -598,9 +598,17 @@
 ;; all modes are loaded -like here-, if you want the "colorization" of code
 ;; to work.
 ;;=============================================================================
-(load "desktop")
-(desktop-load-default)
-(desktop-read)
+;;(load "desktop")
+;;(desktop-load-default)
+;;(desktop-read)
+
+;;=============================================================================
+;; Enable YASnippets
+;;=============================================================================
+(add-to-list 'load-path
+              "~/.emacs.d/elpa/yasnippet-0.14.0")
+(require 'yasnippet)
+(yas-global-mode 1)
 
 ;;=============================================================================
 ;; FRAME SIZE AND POSITION
