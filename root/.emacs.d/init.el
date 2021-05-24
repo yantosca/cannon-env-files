@@ -253,6 +253,7 @@
  '(current-language-environment "ASCII")
  '(display-time-mode t)
  '(global-font-lock-mode t nil (font-lock))
+ '(package-selected-packages '(better-shell magit yasnippet-classic-snippets))
  '(query-user-mail-address nil)
  '(user-mail-address "yantosca@seas.harvard.edu"))
 
@@ -280,7 +281,7 @@
 (global-set-key [f2]                   'kill-word)
 (global-set-key [f3]                   'string-rectangle)
 (global-set-key [f4]                   'delete-rectangle)
-(global-set-key [f5]                   'macrotimestamp)
+(global-set-key [f5]                   'shell) ;macrotimestamp)
 (global-set-key [(shift f5)]           'delete-trailing-whitespace)
 (global-set-key (kbd "<S-pause>")      "\M-l")
 (global-set-key (kbd "<pause>")        "\M-u")
@@ -324,6 +325,11 @@
 (global-set-key [(meta n)]             'scroll-n-lines-ahead)
 (global-set-key [(meta p)]             'scroll-n-lines-behind)
 (global-set-key [(control tab)]        'other-window)
+
+;; Terminals
+(global-set-key (kbd "C-'") 'better-shell-shell)
+(global-set-key (kbd "C-;") 'better-shell-remote-open)
+(global-set-key [(control f1)] 'term)
 
 ; Accelerate by 10 lines
 (global-set-key [(control shift n)] (lambda () (interactive) (next-line 10)))
@@ -384,81 +390,10 @@
 	       )auto-mode-alist))
 
 ;; Manually add certain configuration files to shell-script mode
+(add-to-list 'auto-mode-alist '(".bash_profile"         . shell-script-mode))
 (add-to-list 'auto-mode-alist '(".bashrc"               . shell-script-mode))
 (add-to-list 'auto-mode-alist '(".bash_aliases"         . shell-script-mode))
 (add-to-list 'auto-mode-alist '(".my_personal_settings" . shell-script-mode))
-
-;;-----------------------------------------------------------------------------
-;; IDL MODE CUSTOMIZATIONS
-;;-----------------------------------------------------------------------------
-
-;; Change the indentation preferences
-(setq idlwave-main-block-indent  3         ; default  0
-      idlwave-block-indent       3         ; default  4
-      idlwave-end-offset        -3   )     ; default -4
-
-;; Pad some operators with spaces (or not)
-(setq idlwave-do-actions         t
-      idlwave-surround-by-blank  t)
-
-;; Indent ";" comments with the code but not ";;", ";;;", ";;;;" etc.
-(setq idlwave-code-comment       ";[^;]"  )
-
-;; Some setting can only be done from a mode hook
-(add-hook 'idlwave-mode-hook
-	  (lambda ()
-
-	    ;; Turn off auto filling
-	    (idlwave-auto-fill-mode 0)
-
-	    ;; Some personal abbreviations
-	    (idlwave-define-abbrev "dpf" "dialog_pickfile()"
-				   (idlwave-keyword-abbrev 1))
-
-	    ;; Pad '*' and '+'
-	    (idlwave-action-and-binding "*" '(idlwave-surround 1 1))
-	    (idlwave-action-and-binding "+" '(idlwave-surround 1 1))
-
-	    ))
-
-
-;; Automatically start the shell when needed - RHEA only
-(setq idlwave-shell-automatic-start t)
-
-;; Bind debugging commands with CONTROL and SHIFT modifiers
-;; It replaces C-c C-d C-c
-(setq idlwave-shell-debug-modifiers '(control shift))
-
-;; Where are the online help files? -NEED CHECKING
-(setq idlwave-help-directory "~/.idlwave")
-
-;; Pop open the IDL command line shell in a separate EMACS window
-(setq idlwave-shell-use-dedicated-frame t)
-
-;; To Make C-TAB be "other window" in IDLWAVE
-(require 'idlwave)
-(define-key idlwave-mode-map [(control tab)] 'other-window)
-(define-key idlwave-mode-map [?\M-p]         'idlwave-complete)
-
-;; Since M-Tab is used by Windows, Linux .. and we want to keep
-;; that feature, we need amother binding to 'idlwave-complete
-;; (which we really want to use).  Could use ESC-p but I prefer
-;; to use M-p and F4 since they are available locally. This is NOT
-;; for idl-shell mode, where you simply use TAB to get completion
-(define-key idlwave-mode-map [?\M-p] 'idlwave-complete)
-(define-key idlwave-mode-map [f4] 'idlwave-complete)
-
-;; Bind most useful help functions to S-F1 (for M-?) and
-;; M-F1 (for C-c ?), in both modes, first file buffer...
-(define-key idlwave-mode-map  [(meta f1)]   'idlwave-routine-info)
-(define-key idlwave-mode-map  [(shift f1)]  'idlwave-context-help)
-
-;; ..then for the shell buffer
-(add-hook 'idlwave-shell-mode-hook
-	  (lambda ()
-	    (local-set-key [(meta f1)]   'idlwave-routine-info)
-	    (local-set-key [(shift f1)]  'idlwave-context-help))
-)
 
 ;;-----------------------------------------------------------------------------
 ;; FORTRAN MODE CUSTOMIZATIONS (aka Fortran 77 style)
@@ -584,27 +519,15 @@
 )
 
 ;;-----------------------------------------------------------------------------
-;; Enable font lock and autofill
+;; GLOBAL FONT LOCK MODE (for colorizing text)
 ;;-----------------------------------------------------------------------------
 (if (fboundp 'global-font-lock-mode)
     (global-font-lock-mode 1)          ; GNU Emacs
     (setq font-lock-auto-fontify t))   ; XEmacs
 
-;;=============================================================================
-;; SAVE DESKTOP OPTIONS
-;; To save desktop, i.e., re-open the same files as when exiting.
-;; Load the desktop library to do so.  For this to work, you must type
-;; M-x desktop-save during the session.  This also needs to be done *after*
-;; all modes are loaded -like here-, if you want the "colorization" of code
-;; to work.
-;;=============================================================================
-;;(load "desktop")
-;;(desktop-load-default)
-;;(desktop-read)
-
-;;=============================================================================
-;; Enable YASnippets
-;;=============================================================================
+;;-----------------------------------------------------------------------------
+;; GLOBAL YASnippets MODE
+;;-----------------------------------------------------------------------------
 (add-to-list 'load-path
               "~/.emacs.d/elpa/yasnippet-0.14.0")
 (require 'yasnippet)
@@ -660,4 +583,10 @@
 ;;(rename-buffer "shell-first")             ; rename it
 ;(other-window 1)                           ; move back to first window
 
+;;=============================================================================
+;; REPOSITORIES -- use melpa-stable for installing packages
+;;=============================================================================
+(require 'package)
+(add-to-list 'package-archives
+             '("melpa-stable" . "http://stable.melpa.org/packages/") t)
 ;EOC
