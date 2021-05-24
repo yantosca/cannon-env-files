@@ -22,15 +22,42 @@
 #BOC
 
 #==============================================================================
-# %%%%% Personal settings: Look-and-feel customizations %%%%%
+# %%%%% Personal settings: Look-and-feel %%%%%
 #==============================================================================
-
-PS1="\[\e[1;32m\][\h \W]$\[\e[0m\] "  # Override the default Unix prompt
 
 # Settings for colorization
 export GREP_COLOR=32
-export LS_COLORS='no=00:fi=00:di=01;33:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;37:*.tgz=01;37:*.arj=01;37:*.taz=01;37:*.lzh=01;37:*.zip=01;37:*.z=01;37:*.Z=01;37:*.gz=01;37:*.bz2=01;37:*.deb=01;37:*.rpm=01;37:*.jar=01;37:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.avi=01;35:*.fli=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.flac=01;35:*.mp3=01;35:*.mpc=01;35:*.ogg=01;35:*.wav=01;35:'
 
+if [[ "x${TERM}" == "xdumb" || "x${TERM}" == "xeterm-color" ]]; then
+
+    #--------------------------------------------------------------------------
+    # Prompt and color settings for Emacs terminals
+    # These look better against the default background color "Gray75"
+    #--------------------------------------------------------------------------
+    
+    # Override the system prompt (35 = purple)
+    PS1="\[\e[1;31m\][\h \W]$\[\e[0m\] "
+    
+    # Colors for directory listing
+    # See: http://www.bigsoft.co.uk/blog/2008/04/11/configuring-ls_colors
+    export LS_COLORS='no=00:fi=00:di=01;34:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:tw=30;42:ow=34;42:st=37;44:ex=01;35:*.tar=01;37;44:*.tgz=01;37;44:*.arj=01;37;44:*.taz=01;37;44:*.lzh=01;37;44:*.zip=01;37;44:*.z=01;37;44:*.Z=01;37;44:*.gz=01;37;44:*.bz2=01;37;44:*.deb=01;37;44:*.rpm=01;37;44:*.jar=01;37;44:*.jpg=01;37;44:*.jpeg=01;37;44:*.gif=01;37;44:*.bmp=01;37;44:*.pbm=01;37;44:*.pgm=01;37;44:*.ppm=01;37;44:*.tga=01;37;44:*.xbm=01;37;44:*.xpm=01;37;44:*.tif=01;37;44:*.tiff=01;37;44:*.png=01;37;44:*.mov=01;37;44:*.mpg=01;37;44:*.mpeg=01;37;44:*.avi=01;37;44:*.fli=01;37;44:*.gl=01;37;44:*.dl=01;37;44:*.xcf=01;37;44:*.xwd=01;37;44:*.flac=01;37;44:*.mp3=01;37;44:*.mpc=01;37;44:*.ogg=01;37;44:*.wav=01;37;44:'
+
+else
+
+    #--------------------------------------------------------------------------
+    # Prompt and color settings for Xterm
+    # These look better against the default background color "DarkSlateGray"
+    #--------------------------------------------------------------------------
+    
+    # Override the system prompt (32 = green)
+    PS1="\[\e[1;32m\][\h \W]$\[\e[0m\] "
+
+    # Colors for directory listing
+    # See: http://www.bigsoft.co.uk/blog/2008/04/11/configuring-ls_colors
+    export LS_COLORS='no=00:fi=00:di=01;33:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;37:*.tgz=01;37:*.arj=01;37:*.taz=01;37:*.lzh=01;37:*.zip=01;37:*.z=01;37:*.Z=01;37:*.gz=01;37:*.bz2=01;37:*.deb=01;37:*.rpm=01;37:*.jar=01;37:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.avi=01;35:*.fli=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.flac=01;35:*.mp3=01;35:*.mpc=01;35:*.ogg=01;35:*.wav=01;35:'
+
+fi
+    
 #==============================================================================
 # %%%%% Personal settings: Basic Unix commands %%%%%
 #==============================================================================
@@ -39,9 +66,8 @@ export LS_COLORS='no=00:fi=00:di=01;33:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40
 alias disk="du -h -s -c"
 alias g="grep -in --color=auto"
 alias gt="grep -in --text"
-alias gf="gifview -a"
-alias m="less"
-alias me="xterm &"
+alias m="less -CR"
+alias me="xterm 2>/dev/null &"
 alias proc="ps -ef | grep $USER | sort"
 alias pu="rm *~"
 alias pua="rm .*~"
@@ -67,15 +93,15 @@ alias la="ls -a"
 alias lla="ls -la"
 alias llh="ls -lh"
 
-# Convert a windows file to Unix
-function dos2unix() {
-  awk '{ sub("\r$", ""); print }' $1 > $2
-}
-
 # Tmux aliases
 alias tmuxnew="tmux new -s "
 alias tmuxat="tmux a -t "
 alias tmuxde="tmux detach "
+
+# Convert a windows file to Unix
+function dos2unix() {
+  awk '{ sub("\r$", ""); print }' $1 > $2
+}
 
 #==============================================================================
 # %%%%% Personal settings: Git commands %%%%%
@@ -144,7 +170,7 @@ function gbup() {
 }
 
 function gbrd() {
-    ##### Remove a remote branch #####
+    ###### Remove remote branches #####
     git branch -r -d origin/$1
 }
 
