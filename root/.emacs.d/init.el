@@ -334,7 +334,28 @@
 ; Accelerate by 10 lines
 (global-set-key [(control shift n)] (lambda () (interactive) (next-line 10)))
 (global-set-key [(control shift p)] (lambda () (interactive) (previous-line 10)))
-;; ---------- BOUNCE B/W PARENTHESES
+;; ---------- SHELLS and TERMINALS --------------------------------------------
+
+;; Set Bash as the default shell
+(setq explicit-shell-file-name "/bin/bash")
+
+;; Better-shell
+(global-set-key (kbd "C-'") 'better-shell-shell)
+(global-set-key (kbd "C-;") 'better-shell-remote-open)
+
+;; Open a uniquely-named terminal
+(defun unique-bash-terminal ()
+  "Opens a uniquely-named terminal running bash."
+  (interactive)
+  (set-buffer (make-term "terminal" explicit-shell-file-name))
+  (term-mode)
+  (term-char-mode)
+  (switch-to-buffer "*terminal*")
+  (rename-uniquely)
+)
+(global-set-key [(control f1)] 'unique-bash-terminal)
+
+;; ---------- BOUNCE B/W PARENTHESES ------------------------------------------
 ;; bounces from one sexp "(){}[]<>" to another (ala vi's %)
 ;; written by Joe Casadonte (joc@netaxs.com)
 (defun joc-bounce-sexp ()
@@ -579,8 +600,7 @@
 ;;(other-window 1)                          ; Start in the bottom window
 
 ;; %%%%% Open a shell (optional, but not really necessary) %%%%%
-;(shell)                                    ; start a shell
-;;(rename-buffer "shell-first")             ; rename it
+(unique-bash-terminal)                      ; start a terminal running bash
 ;(other-window 1)                           ; move back to first window
 
 ;;=============================================================================
