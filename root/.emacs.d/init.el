@@ -67,12 +67,9 @@
 ;; COLOR SETTINGS - customize
 ;;=============================================================================
 
-;; BACKGROUND COLOR OPTIONS (ignored if using -nw)
-(unless (featurep 'no-window-system) (set-face-background 'default "gray75"))
-;(unless (featurep 'no-window-system) (set-face-background 'default "FloralWhite")
-;(unless (featurep 'no-window-system) (set-face-background 'default "dark slate gray")
-;(unless (featurep 'no-window-system) (set-face-foreground 'default "blanched almond")
-;(unless (featurep 'no-window-system) (set-face-foreground 'default "black")
+;; Only load the background if we are running Emacs in Xwindows
+(when (display-graphic-p)
+  (set-face-background 'default "gray75"))
 
 ;; "COLORIZATION" COLORS FOR CODE
 (custom-set-faces
@@ -334,14 +331,11 @@
 ; Accelerate by 10 lines
 (global-set-key [(control shift n)] (lambda () (interactive) (next-line 10)))
 (global-set-key [(control shift p)] (lambda () (interactive) (previous-line 10)))
+
 ;; ---------- SHELLS and TERMINALS --------------------------------------------
 
 ;; Set Bash as the default shell
 (setq explicit-shell-file-name "/bin/bash")
-
-;; Better-shell
-(global-set-key (kbd "C-'") 'better-shell-shell)
-(global-set-key (kbd "C-;") 'better-shell-remote-open)
 
 ;; Open a uniquely-named terminal
 (defun unique-bash-terminal ()
@@ -354,6 +348,8 @@
   (rename-uniquely)
 )
 (global-set-key [(control f1)] 'unique-bash-terminal)
+(global-set-key (kbd "C-;") "\C-c \C-j") ;; Terminal line mode
+(global-set-key (kbd "C-'") "\C-c \C-k") ;; Terminal char mode
 
 ;; ---------- BOUNCE B/W PARENTHESES ------------------------------------------
 ;; bounces from one sexp "(){}[]<>" to another (ala vi's %)
