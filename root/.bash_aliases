@@ -181,6 +181,14 @@ function gprune() {
     gbrd $1
 }
 
+function ghgc() {
+    ##### Clone a repo from github.com/geoschem #####
+    git clone git@github.com:geoschem/${1}.git
+}
+function ghy() {
+    ##### Clone a repo from github.com/yantosca #####
+    git clone git@github.com:yantosca/${1}.git
+}
 #==============================================================================
 # %%%%% GCST reserved node holyjacob01 %%%%%
 #==============================================================================
