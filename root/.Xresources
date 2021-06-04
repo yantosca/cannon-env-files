@@ -26,7 +26,7 @@ xterm*background:      DarkSlateGray
 xterm*foreground:      LemonChiffon
 xterm*cursorColor:     FireBrick
 xterm*termType:        xterm
-xterm*geometry:        90x26+0+0
+xterm*geometry:        93x26+0+0
 xterm*saveLines:       10000
 xterm*scrollBar:       true
 xterm*titleBar:        true
@@ -36,6 +36,7 @@ xterm*autoRaise:       true
 !-------------------------------------------------------------------
 ! Generic font, should work on any Linux installation
 xterm*font:            10x20
+emacs.Font:            10x20
 !-------------------------------------------------------------------
 ! Specific fonts, check to see if these are installed locally
 !xterm*faceName:        DejaVu Sans Mono:size=12:embolden=true
