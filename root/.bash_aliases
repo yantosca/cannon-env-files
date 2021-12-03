@@ -35,7 +35,7 @@ if [[ "x${INSIDE_EMACS}" == "x" ]]; then
     # Prompt and color settings for Xterm
     # These look better against the default background color "DarkSlateGray"
     #--------------------------------------------------------------------------
-    
+
     # Override the system prompt (32 = green)
     PS1="\[\e[1;32m\][\h \W]$\[\e[0m\] "
 
@@ -44,21 +44,21 @@ if [[ "x${INSIDE_EMACS}" == "x" ]]; then
     export LS_COLORS='no=00:fi=00:di=01;33:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;37:*.tgz=01;37:*.arj=01;37:*.taz=01;37:*.lzh=01;37:*.zip=01;37:*.z=01;37:*.Z=01;37:*.gz=01;37:*.bz2=01;37:*.deb=01;37:*.rpm=01;37:*.jar=01;37:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.avi=01;35:*.fli=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.flac=01;35:*.mp3=01;35:*.mpc=01;35:*.ogg=01;35:*.wav=01;35:'
 
 else
-    
+
     #--------------------------------------------------------------------------
     # Prompt and color settings for Emacs terminals
     # These look better against the default background color "Gray75"
     #--------------------------------------------------------------------------
-    
+
     # Override the system prompt (31 = red)
     PS1="\[\e[1;31m\][\h \W]$\[\e[0m\] "
-    
+
     # Colors for directory listing
     # See: http://www.bigsoft.co.uk/blog/2008/04/11/configuring-ls_colors
     export LS_COLORS='no=00:fi=00:di=01;34:ln=01;36;44:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:tw=30;42:ow=34;42:st=37;44:ex=01;35:*.py=01;35:*.pl=01;35:*.sh=01;35:*.tar=01;37;44:*.tgz=01;37;44:*.arj=01;37;44:*.taz=01;37;44:*.lzh=01;37;44:*.zip=01;37;44:*.z=01;37;44:*.Z=01;37;44:*.gz=01;37;44:*.bz2=01;37;44:*.deb=01;37;44:*.rpm=01;37;44:*.jar=01;37;44:*.jpg=01;37;44:*.jpeg=01;37;44:*.gif=01;37;44:*.bmp=01;37;44:*.pbm=01;37;44:*.pgm=01;37;44:*.ppm=01;37;44:*.tga=01;37;44:*.xbm=01;37;44:*.xpm=01;37;44:*.tif=01;37;44:*.tiff=01;37;44:*.png=01;37;44:*.mov=01;37;44:*.mpg=01;37;44:*.mpeg=01;37;44:*.avi=01;37;44:*.fli=01;37;44:*.gl=01;37;44:*.dl=01;37;44:*.xcf=01;37;44:*.xwd=01;37;44:*.flac=01;37;44:*.mp3=01;37;44:*.mpc=01;37;44:*.ogg=01;37;44:*.wav=01;37;44:*.~*=01;37;44'
 
 fi
-    
+
 #==============================================================================
 # %%%%% Personal settings: Basic Unix commands %%%%%
 #==============================================================================
@@ -131,7 +131,7 @@ alias update_tags="git tag -l | xargs git tag -d && git fetch -t"
 
 function gcc2gc() {
     ##### Navigate from GCClassic src/GEOS-Chem dir #####
-    if [[ -d ./CodeDir ]]; then 
+    if [[ -d ./CodeDir ]]; then
 	cd CodeDir/src/GEOS-Chem
     else
 	cd src/GEOS-Chem
@@ -140,7 +140,7 @@ function gcc2gc() {
 
 function gc2gcc() {
     ##### Navigate from src/GEOS-Chem to GCClassic #####
-    if [[ -d ../../../CodeDir ]]; then 
+    if [[ -d ../../../CodeDir ]]; then
 	cd ../../..
     else
 	cd ../..
@@ -149,7 +149,7 @@ function gc2gcc() {
 
 function gchp2gc() {
     ##### Navigate from GCHPctm to geos-chem #####
-    if [[ -d ./CodeDir ]]; then 
+    if [[ -d ./CodeDir ]]; then
 	cd CodeDir/src/GCHP_GridComp/GEOSChem_GridComp/geos-chem
     else
 	cd src/GCHP_GridComp/GEOSChem_GridComp/geos-chem
@@ -158,7 +158,7 @@ function gchp2gc() {
 
 function gc2gchp() {
     ##### Navigate from geos-chem to GCHPctm #####
-    if [[ -d ../../../../CodeDir ]]; then 
+    if [[ -d ../../../../CodeDir ]]; then
 	cd ../../../../..
     else
 	cd ../../../..
@@ -179,6 +179,26 @@ function gprune() {
     ##### Remove local and remote branches #####
     git branch -d $1
     gbrd $1
+}
+
+function heads() {
+    ##### Print the head commits for each Git submodule #####
+    n_pad=23
+    pad="                       "
+    submods=$(grep submodule .gitmodules)
+    for s in $submods; do
+	submod=${s/\[submodule/}
+	submod=${submod/\]/}
+	submod=${submod/\"/}
+	submod=${submod/\"/}
+	if [[ "x$submod" != "x" ]]; then
+	    if [[ -d $submod ]]; then
+		head=$(git -C $submod log --oneline -1)
+		y=$(basename $submod)
+		echo "${y:0:n_pad}${pad:0:$((n_pad - ${#y}))}: $head"
+	    fi
+	fi
+    done
 }
 
 function ghgc() {
@@ -272,14 +292,14 @@ function strip_ignoreeof_from_arg_list() {
     done
     echo "${argv}"
 }
-    
+
 function config_gc_from_rundir() {
     ##### Function to configure GEOS-Chem from the run directory #####
 
     # Arguments
     argv=$(strip_ignoreeof_from_arg_list $@)
     echo "%%% Arguments: ${argv}"
-    
+
     # Local variables
     thisDir=$(pwd -P)
     buildDir="build"
@@ -312,7 +332,7 @@ function config_gc_debug_from_rundir() {
     # Arguments
     argv=$(strip_ignoreeof_from_arg_list $@)
     echo "%%% Arguments: ${argv}"
-    
+
     # Local variables
     thisDir=$(pwd -P)
     buildDir="debug"
@@ -372,7 +392,7 @@ function build_gc() {
 	return 1
     fi
 
-    # Success 
+    # Success
     echo "%%% Successful Compilation and Installation! %%%"
     cd ${thisDir}
     return 0
@@ -420,7 +440,7 @@ function gcrun() {
 function gcdry() {
     ##### GEOS-Chem dryrun, pipe to log #####
     log=$(set_log_file "DryRun_${1}")
-    rm -rf ${log}  
+    rm -rf ${log}
     ./gcclassic --dryrun > ${log}
 }
 
