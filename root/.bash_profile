@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-#                  GEOS-Chem Global Chemical Transport Model                  !
+#          Harvard University Atmospheric Chemistry Modeling Group            !
 #------------------------------------------------------------------------------
 #BOP
 #
@@ -13,19 +13,11 @@
 #
 # !REMARKS:
 #  This file just sources the .bashrc file.
-#
-# !REVISION HISTORY:
-#  14 Oct 2014 - R. Yantosca - Initial version
 #EOP
 #------------------------------------------------------------------------------
 #BOC
 
 # Source the .bashrc file if it exists
-if [[ -f ~/.bashrc ]]; then
-   . ~/.bashrc
-fi
+[[ -f ~/.bashrc ]] && . ~/.bashrc
 
-# User specific environment and startup programs
-PATH=$PATH:$HOME/bin
-export PATH
 #EOC

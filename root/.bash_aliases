@@ -23,41 +23,20 @@
 
 #==============================================================================
 # %%%%% Personal settings: Look-and-feel %%%%%
+#
+# Prompt and color settings for Xterm
+# These look better against the default background color "DarkSlateGray"
 #==============================================================================
 
 # Settings for colorization
 export GREP_COLOR=32
 
-# Test if we are running a terminal inside Emacs
-if [[ "x${INSIDE_EMACS}" == "x" ]]; then
+# Override the system prompt (32 = green)
+PS1="\[\e[1;32m\][\h \W]$\[\e[0m\] "
 
-    #--------------------------------------------------------------------------
-    # Prompt and color settings for Xterm
-    # These look better against the default background color "DarkSlateGray"
-    #--------------------------------------------------------------------------
-
-    # Override the system prompt (32 = green)
-    PS1="\[\e[1;32m\][\h \W]$\[\e[0m\] "
-
-    # Colors for directory listing
-    # See: http://www.bigsoft.co.uk/blog/2008/04/11/configuring-ls_colors
-    export LS_COLORS='no=00:fi=00:di=01;33:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;37:*.tgz=01;37:*.arj=01;37:*.taz=01;37:*.lzh=01;37:*.zip=01;37:*.z=01;37:*.Z=01;37:*.gz=01;37:*.bz2=01;37:*.deb=01;37:*.rpm=01;37:*.jar=01;37:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.avi=01;35:*.fli=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.flac=01;35:*.mp3=01;35:*.mpc=01;35:*.ogg=01;35:*.wav=01;35:'
-
-else
-
-    #--------------------------------------------------------------------------
-    # Prompt and color settings for Emacs terminals
-    # These look better against the default background color "Gray75"
-    #--------------------------------------------------------------------------
-
-    # Override the system prompt (31 = red)
-    PS1="\[\e[1;31m\][\h \W]$\[\e[0m\] "
-
-    # Colors for directory listing
-    # See: http://www.bigsoft.co.uk/blog/2008/04/11/configuring-ls_colors
-    export LS_COLORS='no=00:fi=00:di=01;34:ln=01;36;44:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:tw=30;42:ow=34;42:st=37;44:ex=01;35:*.py=01;35:*.pl=01;35:*.sh=01;35:*.tar=01;37;44:*.tgz=01;37;44:*.arj=01;37;44:*.taz=01;37;44:*.lzh=01;37;44:*.zip=01;37;44:*.z=01;37;44:*.Z=01;37;44:*.gz=01;37;44:*.bz2=01;37;44:*.deb=01;37;44:*.rpm=01;37;44:*.jar=01;37;44:*.jpg=01;37;44:*.jpeg=01;37;44:*.gif=01;37;44:*.bmp=01;37;44:*.pbm=01;37;44:*.pgm=01;37;44:*.ppm=01;37;44:*.tga=01;37;44:*.xbm=01;37;44:*.xpm=01;37;44:*.tif=01;37;44:*.tiff=01;37;44:*.png=01;37;44:*.mov=01;37;44:*.mpg=01;37;44:*.mpeg=01;37;44:*.avi=01;37;44:*.fli=01;37;44:*.gl=01;37;44:*.dl=01;37;44:*.xcf=01;37;44:*.xwd=01;37;44:*.flac=01;37;44:*.mp3=01;37;44:*.mpc=01;37;44:*.ogg=01;37;44:*.wav=01;37;44:*.~*=01;37;44'
-
-fi
+# Colors for directory listing
+# See: http://www.bigsoft.co.uk/blog/2008/04/11/configuring-ls_colors
+export LS_COLORS='no=00:fi=00:di=01;33:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;37:*.tgz=01;37:*.arj=01;37:*.taz=01;37:*.lzh=01;37:*.zip=01;37:*.z=01;37:*.Z=01;37:*.gz=01;37:*.bz2=01;37:*.deb=01;37:*.rpm=01;37:*.jar=01;37:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.avi=01;35:*.fli=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.flac=01;35:*.mp3=01;35:*.mpc=01;35:*.ogg=01;35:*.wav=01;35:'
 
 #==============================================================================
 # %%%%% Personal settings: Basic Unix commands %%%%%
@@ -80,7 +59,7 @@ alias cd="cd -P"
 alias c="clear"
 alias h="history"
 alias diff="colordiff"
-alias rm="rm -Iv"
+#alias rm="rm -Iv"
 alias cp="cp -v"
 alias mv="mv -v"
 
@@ -99,71 +78,59 @@ alias tmuxnew="tmux new -s "
 alias tmuxat="tmux a -t "
 alias tmuxde="tmux detach "
 
-# Convert a windows file to Unix
 function dos2unix() {
-  awk '{ sub("\r$", ""); print }' $1 > $2
+    ##### Convert a windows file to Unix #####
+    awk '{ sub("\r$", ""); print }' $1 > tmpfile
+    mv tmpfile > $1
+}
+
+function prepdir() {
+    ##### Change group to jacob_gcst and add group write permission #####
+    chmod -R g+w $1
+    chgrp -R jacob_gcst $1
 }
 
 #==============================================================================
 # %%%%% Personal settings: Git commands %%%%%
 #==============================================================================
 
-# Aliases for Git commands
+# Aliases for basic Git commands
 source /etc/bash_completion.d/git    # enable tab-completion
 alias clone_gcc="git clone git@github.com:geoschem/GCClassic.git"
 alias clone_gchp="git clone git@github.com:geoschem/gchp.git"
 alias clone_hco="git clone git@github.com:geoschem/hemco.git"
-alias getenv="cd ~/env; git pull origin master"
+alias gfp="git fetch -p"
 alias gitc="git -C CodeDir"
 alias gl="git log"
 alias glo="git log --oneline"
-alias glog="git -C src/GEOS-Chem log --oneline "
-alias gplog="git -C src/GCHP_GridComp/GEOSChem_GridComp/geos-chem log --oneline "
 alias glp="git log --pretty=format:'%h : %s' --topo-order --graph"
 alias gk="gitk 2>/dev/null &"
 alias gka="gitk --all 2>/dev/null &"
+alias gkb="gitk 2>/dev/null -b "
 alias gpo="git pull origin"
 alias gui="git gui 2>/dev/null &"
 alias gsu="git submodule update --init --recursive"
-alias hlog="git -C src/HEMCO log --oneline "
-alias hplog="git -C src/GCHP_GridComp/HEMCO_GridComp/HEMCO log --oneline "
 alias update_tags="git tag -l | xargs git tag -d && git fetch -t"
 
-function gcc2gc() {
-    ##### Navigate from GCClassic src/GEOS-Chem dir #####
-    if [[ -d ./CodeDir ]]; then
-	cd CodeDir/src/GEOS-Chem
-    else
-	cd src/GEOS-Chem
-    fi
-}
+# Git shortcuts for GEOS-Chem Classic
+alias gcc2gc="cd src/GEOS-Chem"
+alias gc2gcc="cd ../.."
+alias gcc2hco="cd src/HEMCO"
+alias hco2gcc="cd ../.."
+alias gck="git -C src/GEOS-Chem checkout"
+alias hck="git -C src/HEMCO checkout"
+alias glog="git -C src/GEOS-Chem log --oneline "
+alias hlog="git -C src/HEMCO log --oneline "
 
-function gc2gcc() {
-    ##### Navigate from src/GEOS-Chem to GCClassic #####
-    if [[ -d ../../../CodeDir ]]; then
-	cd ../../..
-    else
-	cd ../..
-    fi
-}
-
-function gchp2gc() {
-    ##### Navigate from GCHPctm to geos-chem #####
-    if [[ -d ./CodeDir ]]; then
-	cd CodeDir/src/GCHP_GridComp/GEOSChem_GridComp/geos-chem
-    else
-	cd src/GCHP_GridComp/GEOSChem_GridComp/geos-chem
-    fi
-}
-
-function gc2gchp() {
-    ##### Navigate from geos-chem to GCHPctm #####
-    if [[ -d ../../../../CodeDir ]]; then
-	cd ../../../../..
-    else
-	cd ../../../..
-    fi
-}
+# Git shortcuts for GCHP
+alias gchp2gc="cd src/GCHP_GridComp/GEOSChem_GridComp/geos-chem"
+alias gc2gchp="cd ../../../.."
+alias gchp2hco="cd src/GCHP_GridComp/HEMCO_GridComp/HEMCO"
+alias hco2gchp="cd ../../../.."
+alias gpck="git -C src/GCHP_GridComp/GEOSChem_GridComp/geos-chem checkout "
+alias hpck="git -C src/GCHP_GridComp/HEMCO_GridComp/HEMCO checkout "
+alias gplog="git -C src/GCHP_GridComp/GEOSChem_GridComp/geos-chem log --oneline "
+alias hplog="git -C src/GCHP_GridComp/HEMCO_GridComp/HEMCO log --oneline "
 
 function gbup() {
     ###### Set a branch to follow a remote branch #####
@@ -201,14 +168,6 @@ function heads() {
     done
 }
 
-function ghgc() {
-    ##### Clone a repo from github.com/geoschem #####
-    git clone git@github.com:geoschem/${1}.git
-}
-function ghy() {
-    ##### Clone a repo from github.com/yantosca #####
-    git clone git@github.com:yantosca/${1}.git
-}
 #==============================================================================
 # %%%%% GCST reserved node holyjacob01 %%%%%
 #==============================================================================
@@ -220,13 +179,11 @@ alias hj1="ssh -YA holyjacob01"
 # Settings that will only be visible from holyjacob01
 if [[ "x${HOSTNAME}" == "xholyjacob01.rc.fas.harvard.edu" ]]; then
   export LOCAL_HOME=/local/ryantosca
-  alias lh="cd ${LOCAL_HOME}"
-  alias lgc="cd ${LOCAL_HOME}/GC"
 
-  # KPP settings on holyjacob01
-  export KPP_HOME=/local/ryantosca/GC/KPP/kpp-2.2.3_01
-  export KPP_BIN=${KPP_HOME}/bin
-  export PATH=${PATH}:${KPP_BIN}
+  # KPP settings on holyjacob01 (only add to path if it's not there)
+  if [[ ! "KPP" =~ ${PATH} ]]; then
+      export PATH="${PATH}:/local/ryantosca/GC/KPP/kpp-code/bin"
+  fi
 fi
 
 function set_omp() {
@@ -238,7 +195,6 @@ function set_omp() {
 #==============================================================================
 # %%%%% Logins to other machines %%%%%
 #==============================================================================
-#alias nccs="$HOME/bin/xt -h login.nccs.nasa.gov -u ryantosc &"
 alias gcfas="${HOME}/bin/xt -h fas.harvard.edu -u geoschem &"
 alias awsgo="ssh -YA -i ~/.ssh/bmy_aws_keypair.pem "
 function awsagent() {
@@ -313,7 +269,9 @@ function config_gc_from_rundir() {
 
     # Configure the code for type Release
     cd ${buildDir}
-    cmake ../CodeDir -DCMAKE_BUILD_TYPE=Release -DRUNDIR=".." ${argv}
+    # NOTE: GCHP builds choke when specifying build type
+    #cmake ../CodeDir -DCMAKE_BUILD_TYPE=Release -DRUNDIR=".." ${argv}
+    cmake ../CodeDir -DRUNDIR=".." ${argv}
     if [[ $? -ne 0 ]]; then
 	echo "%%% Failed configuration! %%%"
 	cd ${thisDir}
@@ -321,7 +279,7 @@ function config_gc_from_rundir() {
     fi
 
     # Successful return
-    echo "%%% Successful configuration: Release! %%%"
+    echo "%%% Successful configuration! %%%"
     cd ${thisDir}
     return 0
 }
@@ -457,6 +415,11 @@ function dos2unix() {
     mv temp.txt $1 > /dev/null
 }
 
+# Reinitialize X11 settings
+if [[ $- = *i* ]] ; then
+    xrdb ~/.Xresources
+fi
+
 #==============================================================================
 # %%%%% Python settings %%%%%
 #==============================================================================
@@ -476,4 +439,13 @@ export PYLINTRC=~/.pylint.rc
 
 # Temporary Python folder (avoids warning messages)
 export XDG_RUNTIME_DIR=/tmp/runtime-${USER}
+
+#==============================================================================
+# %%%%% Local PATH settings %%%%%
+#==============================================================================
+
+# Add local bin folder to the head of $PATH (if it's not there)
+if [[ ! "~/bin" =~ $PATH ]]; then
+    export PATH="~/bin:${PATH}"
+fi
 #EOC
